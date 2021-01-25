@@ -109,7 +109,7 @@ var PullToRefresh = function (_a) {
         childrenRef.current.addEventListener('mousedown', onTouchStart);
         childrenRef.current.addEventListener('touchmove', onTouchMove, { passive: false });
         childrenRef.current.addEventListener('mousemove', onTouchMove);
-        window.addEventListener('scroll', onScroll);
+        childrenRef.current.addEventListener('scroll', onScroll);
         childrenRef.current.addEventListener('touchend', onEnd);
         childrenRef.current.addEventListener('mouseup', onEnd);
         document.body.addEventListener('mouseleave', onEnd);
@@ -120,7 +120,7 @@ var PullToRefresh = function (_a) {
             childrenRef.current.removeEventListener('mousedown', onTouchStart);
             childrenRef.current.removeEventListener('touchmove', onTouchMove);
             childrenRef.current.removeEventListener('mousemove', onTouchMove);
-            window.removeEventListener('scroll', onScroll);
+            childrenRef.current.removeEventListener('scroll', onScroll);
             childrenRef.current.removeEventListener('touchend', onEnd);
             childrenRef.current.removeEventListener('mouseup', onEnd);
             document.body.removeEventListener('mouseleave', onEnd);
@@ -151,7 +151,7 @@ var PullToRefresh = function (_a) {
         /**
          * Proceed
          */
-        if (canFetchMore && getScrollToBottomValue() < fetchMoreThreshold && onFetchMore) {
+        if (canFetchMore && getScrollToBottomValue() && onFetchMore) {
             containerRef.current.classList.add('ptr--fetch-more-treshold-breached');
             fetchMoreTresholdBreached = true;
             onFetchMore().then(initContainer).catch(initContainer);
@@ -162,10 +162,9 @@ var PullToRefresh = function (_a) {
      */
     var getScrollToBottomValue = function () {
         if (!childrenRef || !childrenRef.current)
-            return -1;
-        var scrollTop = window.scrollY; // is the pixels hidden in top due to the scroll. With no scroll its value is 0.
-        var scrollHeight = childrenRef.current.scrollHeight; // is the pixels of the whole container
-        return scrollHeight - scrollTop - window.innerHeight;
+            return false;
+        var client = childrenRef.current;
+        return client.scrollHeight - client.scrollTop - fetchMoreThreshold <= client.clientHeight;
     };
     var initContainer = function () {
         requestAnimationFrame(function () {
@@ -250,7 +249,7 @@ var PullToRefresh = function (_a) {
         /**
          * Check if user breached fetchMoreThreshold
          */
-        if (canFetchMore && getScrollToBottomValue() < fetchMoreThreshold && onFetchMore) {
+        if (canFetchMore && getScrollToBottomValue() && onFetchMore) {
             fetchMoreTresholdBreached = true;
             containerRef.current.classList.add('ptr--fetch-more-treshold-breached');
             onFetchMore().then(initContainer).catch(initContainer);

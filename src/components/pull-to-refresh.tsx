@@ -50,7 +50,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
     childrenRef.current.addEventListener('mousedown', onTouchStart);
     childrenRef.current.addEventListener('touchmove', onTouchMove, { passive: false });
     childrenRef.current.addEventListener('mousemove', onTouchMove);
-    window.addEventListener('scroll', onScroll);
+    childrenRef.current.addEventListener('scroll', onScroll);
     childrenRef.current.addEventListener('touchend', onEnd);
     childrenRef.current.addEventListener('mouseup', onEnd);
     document.body.addEventListener('mouseleave', onEnd);
@@ -61,7 +61,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
       childrenRef.current.removeEventListener('mousedown', onTouchStart);
       childrenRef.current.removeEventListener('touchmove', onTouchMove);
       childrenRef.current.removeEventListener('mousemove', onTouchMove);
-      window.removeEventListener('scroll', onScroll);
+      childrenRef.current.removeEventListener('scroll', onScroll);
       childrenRef.current.removeEventListener('touchend', onEnd);
       childrenRef.current.removeEventListener('mouseup', onEnd);
       document.body.removeEventListener('mouseleave', onEnd);
@@ -92,7 +92,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
     /**
      * Proceed
      */
-    if (canFetchMore && getScrollToBottomValue() < fetchMoreThreshold && onFetchMore) {
+    if (canFetchMore && getScrollToBottomValue() && onFetchMore) {
       containerRef.current.classList.add('ptr--fetch-more-treshold-breached');
       fetchMoreTresholdBreached = true;
       onFetchMore().then(initContainer).catch(initContainer);
@@ -102,11 +102,10 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
   /**
    * Returns distance to bottom of the container
    */
-  const getScrollToBottomValue = (): number => {
-    if (!childrenRef || !childrenRef.current) return -1;
-    const scrollTop = window.scrollY; // is the pixels hidden in top due to the scroll. With no scroll its value is 0.
-    const scrollHeight = childrenRef.current.scrollHeight; // is the pixels of the whole container
-    return scrollHeight - scrollTop - window.innerHeight;
+  const getScrollToBottomValue = (): boolean => {
+    if (!childrenRef || !childrenRef.current) return false;
+    const client = childrenRef.current;
+    return client.scrollHeight - client.scrollTop - fetchMoreThreshold <= client.clientHeight;
   };
 
   const initContainer = (): void => {
@@ -197,7 +196,7 @@ const PullToRefresh: React.FC<PullToRefreshProps> = ({
     /**
      * Check if user breached fetchMoreThreshold
      */
-    if (canFetchMore && getScrollToBottomValue() < fetchMoreThreshold && onFetchMore) {
+    if (canFetchMore && getScrollToBottomValue() && onFetchMore) {
       fetchMoreTresholdBreached = true;
       containerRef.current!.classList.add('ptr--fetch-more-treshold-breached');
       onFetchMore().then(initContainer).catch(initContainer);
